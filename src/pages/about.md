@@ -5,22 +5,16 @@ title: "About"
 
 Hey, I'm Shivam.
 
-I work as a Quantitative Researcher at [True Beacon](https://truebeacon.com/). My job is figuring out which quantitative strategies to bet on and how much money to put into each—basically pattern recognition, probability, and learning to be wrong gracefully. I use both data and common sense (though the balance shifts depending on the day).
+I work as a quantitative researcher at [True Beacon](https://truebeacon.com/). Most of my time goes into thinking about which quantitative strategies are worth backing and how capital should be allocated across them. The work is equal parts pattern recognition, probability, and learning to be wrong without panicking. Some days the answers come from data, other days from judgment, and usually from a mix of both.
 
-Before True Beacon, I built quantitative models and backtesting systems at Magma Ventures and JPMorgan Chase. I also spent some time in the MLOps world at TCG Digital, building machine learning pipelines with Python and Flask.
+Before this, I worked on quantitative models and backtesting systems at Magma Ventures and JPMorgan Chase. I've also spent time in the MLOps world at TCG Digital, building machine learning pipelines with Python and Flask. Those experiences shaped how I think about systems, incentives, and the gap between ideas that look good on paper and ones that survive contact with reality.
 
-I studied Aerospace Engineering at IIT Kharagpur (B.Tech + M.Tech, 2021). These days I think more about markets than aerodynamics, but the problem-solving mindset carries over.
+I studied Aerospace Engineering at IIT Kharagpur, finishing my B.Tech and M.Tech in 2021. I don't work on aerodynamics anymore, but the way of thinking stuck. Break complex problems down, understand the constraints, and be honest about uncertainty.
 
-## What I Write About
+This blog is where I write through things I'm learning and building. I'm interested in markets, mathematics, and metaphysics, especially where structure meets randomness. Some posts are exploratory, some are more complete, and many sit in between. The point isn't to sound finished, but to think clearly and leave a trail I can return to.
 
-This blog explores **markets, mathematics, and metaphysics**—ideas at the intersection of order and chaos.
+Outside of work, I play chess. It's a clean way to stay sharp and a constant reminder that small mistakes add up. [Challenge me if you're up for a game](https://lichess.org/@/ShivamRajdev).
 
-I write about things I'm learning and projects I'm building. Some are half-baked, some are finished. Both make it here.
+If you want to reach me, email works best: [shivam.rajdev1998@gmail.com](mailto:shivam.rajdev1998@gmail.com).
 
-I also love chess. [Challenge me if you're up for a game](https://lichess.org/@/ShivamRajdev).
-
-## Let's Connect
-
-Email works best: [shivam.rajdev1998@gmail.com](mailto:shivam.rajdev1998@gmail.com)
-
-You'll also find me on [LinkedIn](https://www.linkedin.com/in/rajdevshivam111/) and [GitHub](https://github.com/RajdevShivam).
+I'm also on [LinkedIn](https://www.linkedin.com/in/rajdevshivam111/) and [GitHub](https://github.com/RajdevShivam).
