@@ -1,10 +1,10 @@
 export const SITE = {
-  website: "https://yourname.pages.dev/", // replace with custom domain later
-  author: "Shivam",
-  profile: "https://yourname.pages.dev/",
-  desc: "Personal blog about quantitative finance, philosophy, and building things.",
-  title: "Shivam's Blog",
-  ogImage: "og-image.jpg",
+  website: "https://shivamrajdev.com", // Will update when domain is configured
+  author: "Shivam Rajdev",
+  profile: "https://shivamrajdev.com",
+  desc: "Markets, mathematics, metaphysics—exploring ideas at the intersection of order and chaos",
+  title: "Order in Chaos",
+  ogImage: "og-image.png",
   lightAndDarkMode: true,
   postPerIndex: 5,
   postPerPage: 10,

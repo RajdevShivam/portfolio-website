@@ -18,29 +18,24 @@ interface Social {
 
 export const SOCIALS: Social[] = [
   {
-    name: "GitHub",
-    href: "https://github.com/satnaing/astro-paper",
-    linkTitle: `${SITE.title} on GitHub`,
-    icon: IconGitHub,
-  },
-  {
-    name: "X",
-    href: "https://x.com/username",
-    linkTitle: `${SITE.title} on X`,
-    icon: IconBrandX,
+    name: "Mail",
+    href: "mailto:shivam.rajdev1998@gmail.com",
+    linkTitle: `Send an email to Shivam`,
+    icon: IconMail,
   },
   {
     name: "LinkedIn",
-    href: "https://www.linkedin.com/in/username/",
-    linkTitle: `${SITE.title} on LinkedIn`,
+    href: "https://www.linkedin.com/in/rajdevshivam111/",
+    linkTitle: `Connect with Shivam on LinkedIn`,
     icon: IconLinkedin,
   },
   {
-    name: "Mail",
-    href: "mailto:yourmail@gmail.com",
-    linkTitle: `Send an email to ${SITE.title}`,
-    icon: IconMail,
+    name: "GitHub",
+    href: "https://github.com/RajdevShivam",
+    linkTitle: `Check out Shivam's code on GitHub`,
+    icon: IconGitHub,
   },
+  // Note: Lichess link (https://lichess.org/@/ShivamRajdev) - add custom icon later if desired
 ] as const;
 
 export const SHARE_LINKS: Social[] = [

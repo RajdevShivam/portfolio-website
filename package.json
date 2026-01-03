@@ -1,7 +1,13 @@
 {
-  "name": "astro-paper",
+  "name": "order-in-chaos",
   "type": "module",
-  "version": "5.5.0",
+  "version": "1.0.0",
+  "description": "Personal blog by Shivam Rajdev - Markets, mathematics, metaphysics",
+  "author": "Shivam Rajdev <shivam.rajdev1998@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RajdevShivam/portfolio-website"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro check && astro build && pagefind --site dist && cp -r dist/pagefind public/",

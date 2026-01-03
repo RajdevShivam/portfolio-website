@@ -5,22 +5,22 @@ title: "About"
 
 Hey, I'm Shivam.
 
-I write about quantitative finance, philosophy, and building things.
+I work as a Quantitative Researcher at [True Beacon](https://truebeacon.com/). My job is figuring out which quantitative strategies to bet on and how much money to put into each—basically pattern recognition, probability, and learning to be wrong gracefully. I use both data and common sense (though the balance shifts depending on the day).
 
-This blog is my space to explore ideas, share what I'm learning, and document my journey in finance and technology.
+Before True Beacon, I built quantitative models and backtesting systems at Magma Ventures and JPMorgan Chase. I also spent some time in the MLOps world at TCG Digital, building machine learning pipelines with Python and Flask.
 
-## What I write about
+I studied Aerospace Engineering at IIT Kharagpur (B.Tech + M.Tech, 2021). These days I think more about markets than aerodynamics, but the problem-solving mindset carries over.
 
-**Quantitative Finance** - Markets, trading strategies, and financial modeling
+## What I Write About
 
-**Philosophy** - Ideas that shape how I think and make decisions
+This blog explores **markets, mathematics, and metaphysics**—ideas at the intersection of order and chaos.
 
-**Projects** - Things I'm building and lessons learned along the way
+I write about things I'm learning and projects I'm building. Some are half-baked, some are finished. Both make it here.
 
-**Personal** - Reflections and experiences worth sharing
+I also love chess. [Challenge me if you're up for a game](https://lichess.org/@/ShivamRajdev).
 
-## About this site
+## Let's Connect
 
-This blog is built with [Astro](https://astro.build/), uses [Notion](https://notion.so) as a CMS, and is hosted on [Cloudflare Pages](https://pages.cloudflare.com/).
+Email works best: [shivam.rajdev1998@gmail.com](mailto:shivam.rajdev1998@gmail.com)
 
-The design philosophy is simple: natural ease through whitespace and typography. Content first, everything else second.
+You'll also find me on [LinkedIn](https://www.linkedin.com/in/rajdevshivam111/) and [GitHub](https://github.com/RajdevShivam).
