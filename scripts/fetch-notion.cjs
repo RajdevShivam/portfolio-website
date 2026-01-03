@@ -74,14 +74,20 @@ async function processPage(page) {
         };
 
         const title = getProp('Title') || getProp('title') || "Untitled";
-        const description = getProp('Description') || getProp('description') || "";
+        const description = getProp('SEO Description') || getProp('Description') || getProp('description') || "";
         const pubDatetime = getProp('Publish Date') || getProp('pubDatetime') || page.created_time;
         const modDatetime = getProp('modDatetime') || null;
         const author = getProp('Author') || getProp('author') || "Shivam Rajdev";
         const featured = getProp('Featured') || getProp('featured') || false;
-        const draft = getProp('Draft') || getProp('draft') || false;
+
+        // Get Status property (select type)
+        const statusProp = properties['Status'] || properties['status'];
+        const status = statusProp?.select?.name || 'Draft';
+        const draft = status !== 'Published'; // Only publish if Status = "Published"
+
         const tags = getProp('Tags') || getProp('tags') || [];
         const slug = getProp('Slug') || getProp('slug') || id;
+        const readingTime = getProp('Reading Time') || null;
 
         // Handle cover image (check "Cover Image" property first, then Notion's built-in cover)
         let ogImage = getProp('Cover Image');
@@ -91,7 +97,7 @@ async function processPage(page) {
         }
 
         if (draft) {
-            console.log(`Skipping draft: ${title}`);
+            console.log(`Skipping ${status} post: ${title}`);
             return;
         }
 
