@@ -13,6 +13,7 @@
     "build": "astro check && astro build && pagefind --site dist && cp -r dist/pagefind public/",
     "preview": "astro preview",
     "sync": "astro sync",
+    "sync-notion": "tsx scripts/fetch-notion.ts",
     "astro": "astro",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
@@ -21,11 +22,14 @@
   "dependencies": {
     "@astrojs/rss": "^4.0.14",
     "@astrojs/sitemap": "^3.6.0",
+    "@notionhq/client": "^5.6.0",
     "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/vite": "^4.1.18",
     "astro": "^5.16.6",
     "dayjs": "^1.11.19",
+    "dotenv": "^17.2.3",
     "lodash.kebabcase": "^4.1.1",
+    "notion-to-md": "^3.1.9",
     "remark-collapse": "^0.1.2",
     "remark-toc": "^9.0.0",
     "satori": "^0.18.3",
@@ -46,6 +50,7 @@
     "prettier": "^3.7.4",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.51.0"
   }

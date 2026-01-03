@@ -3,6 +3,7 @@ import { slugifyStr } from "@/utils/slugify";
 import type { CollectionEntry } from "astro:content";
 import { getPath } from "@/utils/getPath";
 import Datetime from "./Datetime.astro";
+import Tag from "./Tag.astro";
 
 export interface Props extends CollectionEntry<"blog"> {
   variant?: "h2" | "h3";
@@ -10,15 +11,28 @@ export interface Props extends CollectionEntry<"blog"> {
 
 const { variant = "h2", data, id, filePath } = Astro.props;
 
-const { title, description, pubDatetime, modDatetime, timezone } = data;
+const { title, description, pubDatetime, modDatetime, timezone, tags, ogImage } = data;
 
 const headerProps = {
   style: { viewTransitionName: slugifyStr(title) },
   class: "text-lg font-medium decoration-dashed hover:underline",
 };
+
+const shortDescription = description.length > 100 
+  ? description.substring(0, 100) + "..." 
+  : description;
 ---
 
 <li class="my-6">
+  {ogImage && (
+    <a href={getPath(id, filePath)} class="mb-4 block overflow-hidden rounded-lg">
+      <img 
+        src={typeof ogImage === 'string' ? ogImage : ogImage.src} 
+        alt={title} 
+        class="h-48 w-full object-cover transition-transform duration-300 hover:scale-105"
+      />
+    </a>
+  )}
   <a
     href={getPath(id, filePath)}
     class="inline-block text-lg font-medium text-accent decoration-dashed underline-offset-4 focus-visible:no-underline focus-visible:underline-offset-0"
@@ -32,5 +46,8 @@ const headerProps = {
     }
   </a>
   <Datetime {pubDatetime} {modDatetime} {timezone} />
-  <p>{description}</p>
+  <p>{shortDescription}</p>
+  <ul class="mt-2">
+    {tags && tags.map(tag => <Tag tag={slugifyStr(tag)} tagName={tag} />)}
+  </ul>
 </li>

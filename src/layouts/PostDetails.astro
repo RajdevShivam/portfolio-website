@@ -110,6 +110,13 @@ const nextPost =
       >
       <EditPost {hideEditPost} {post} class="max-sm:hidden" />
     </div>
+    {ogImageUrl && (
+      <img 
+        src={ogImageUrl} 
+        alt={title} 
+        class="my-8 w-full rounded-xl object-cover shadow-lg"
+      />
+    )}
     <article
       id="article"
       class="app-prose mx-auto mt-8 max-w-app prose-pre:bg-(--shiki-light-bg) dark:prose-pre:bg-(--shiki-dark-bg)"
