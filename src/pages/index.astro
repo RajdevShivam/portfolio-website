@@ -6,7 +6,6 @@ import Footer from "@/components/Footer.astro";
 import Socials from "@/components/Socials.astro";
 import LinkButton from "@/components/LinkButton.astro";
 import Card from "@/components/Card.astro";
-import Hr from "@/components/Hr.astro";
 import getSortedPosts from "@/utils/getSortedPosts";
 import IconRss from "@/assets/icons/IconRss.svg";
 import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
@@ -16,7 +15,6 @@ import { SOCIALS } from "@/constants";
 const posts = await getCollection("blog");
 
 const sortedPosts = getSortedPosts(posts);
-const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
 const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
 ---
 
@@ -42,25 +40,24 @@ const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
         <span class="sr-only">RSS Feed</span>
       </a>
 
-      <p class="text-lg italic mb-4">
-        Markets, mathematics, metaphysics—exploring ideas at the intersection of order and chaos.
+      <p class="my-6 text-lg leading-relaxed opacity-80">
+        Markets, mathematics, metaphysics: exploring ideas at the intersection of order and chaos.
       </p>
-      <p>
-        I'm <LinkButton href="/about" class="underline decoration-dashed underline-offset-4 hover:text-accent">Shivam</LinkButton>, a quantitative researcher. I write about things I'm learning and building.
+
+      <p class="mb-6 text-base leading-relaxed opacity-70">
+        I'm <a href="/about" class="text-accent hover:underline">Shivam</a>, a quantitative researcher. I write about things I'm learning and building.
       </p>
 
       {
         // only display if at least one social link is enabled
         SOCIALS.length > 0 && (
-          <div class="mt-4 flex flex-col sm:flex-row sm:items-center">
-            <div class="me-2 mb-1 whitespace-nowrap sm:mb-0">Social Links:</div>
+          <div class="mt-4 flex flex-col sm:flex-row sm:items-center text-sm opacity-70">
+            <div class="me-2 mb-1 whitespace-nowrap sm:mb-0">Connect:</div>
             <Socials />
           </div>
         )
       }
     </section>
-
-    <Hr />
 
     {
       recentPosts.length > 0 && (

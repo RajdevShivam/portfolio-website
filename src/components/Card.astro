@@ -23,30 +23,24 @@ const shortDescription = description.length > 100
   : description;
 ---
 
-<li class="my-6">
+<li class="my-8">
   {ogImage && (
-    <a href={getPath(id, filePath)} class="mb-4 block overflow-hidden rounded-lg">
+    <a href={getPath(id, filePath)} class="mb-4 block overflow-hidden rounded-md">
       <img 
         src={typeof ogImage === 'string' ? ogImage : ogImage.src} 
         alt={title} 
-        class="h-48 w-full object-cover transition-transform duration-300 hover:scale-105"
+        class="h-48 w-full object-cover transition-transform duration-500 hover:scale-105"
       />
     </a>
   )}
   <a
     href={getPath(id, filePath)}
-    class="inline-block text-lg font-medium text-accent decoration-dashed underline-offset-4 focus-visible:no-underline focus-visible:underline-offset-0"
+    class="inline-block text-xl font-semibold text-foreground decoration-accent/30 underline decoration-2 underline-offset-4 transition-colors hover:decoration-accent focus-visible:no-underline focus-visible:underline-offset-0"
   >
-    {
-      variant === "h2" ? (
-        <h2 {...headerProps}>{title}</h2>
-      ) : (
-        <h3 {...headerProps}>{title}</h3>
-      )
-    }
+    {variant === "h2" ? <h2 {...headerProps}>{title}</h2> : <h3 {...headerProps}>{title}</h3>}
   </a>
   <Datetime {pubDatetime} {modDatetime} {timezone} />
-  <p>{shortDescription}</p>
+  <p class="mt-2 line-clamp-2 text-sm opacity-70">{shortDescription}</p>
   <ul class="mt-2">
     {tags && tags.map(tag => <Tag tag={slugifyStr(tag)} tagName={tag} />)}
   </ul>
