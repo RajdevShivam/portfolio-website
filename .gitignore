@@ -24,6 +24,9 @@ pnpm-debug.log*
 .idea/
 
 # pagefind
-
 public/pagefind
 errors.txt
+
+# blog data (fetched from Notion)
+src/data/blog/*.md
+!src/data/blog/.gitkeep
