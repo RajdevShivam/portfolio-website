@@ -16,6 +16,10 @@ const {
   title,
   disabled = false,
 } = Astro.props;
+const isExternal =
+  href.startsWith("http") ||
+  href.startsWith("mailto:") ||
+  href.startsWith("tel:");
 ---
 
 {
@@ -35,6 +39,8 @@ const {
       class:list={["group inline-block hover:text-accent", className]}
       aria-label={ariaLabel}
       title={title}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noopener noreferrer" : undefined}
     >
       <slot />
     </a>

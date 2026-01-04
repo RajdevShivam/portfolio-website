@@ -152,6 +152,34 @@ const structuredData = {
     }
 
     <script is:inline src="/toggle-theme.js"></script>
+
+    <script is:inline>
+      /**
+       * Function to add target="_blank" and rel="noopener noreferrer" to external links.
+       */
+      function handleExternalLinks() {
+        const links = document.querySelectorAll("a");
+        links.forEach(link => {
+          const href = link.getAttribute("href");
+          if (
+            href &&
+            (href.startsWith("http") ||
+              href.startsWith("mailto:") ||
+              href.startsWith("tel:")) &&
+            !href.includes(window.location.host)
+          ) {
+            link.setAttribute("target", "_blank");
+            link.setAttribute("rel", "noopener noreferrer");
+          }
+        });
+      }
+
+      // Run on initial load
+      handleExternalLinks();
+
+      // Run after view transitions
+      document.addEventListener("astro:after-swap", handleExternalLinks);
+    </script>
   </head>
   <body>
     <slot />
