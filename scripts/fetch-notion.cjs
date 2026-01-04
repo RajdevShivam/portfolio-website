@@ -73,6 +73,18 @@ async function processPage(page) {
             return null;
         };
 
+        const slugify = (text) => {
+            return text
+                .toString()
+                .toLowerCase()
+                .trim()
+                .replace(/\s+/g, '-')     // Replace spaces with -
+                .replace(/[^\w-]+/g, '')  // Remove all non-word chars
+                .replace(/--+/g, '-')     // Replace multiple - with single -
+                .replace(/^-+/, '')       // Trim - from start of text
+                .replace(/-+$/, '');      // Trim - from end of text
+        };
+
         const title = getProp('Title') || getProp('title') || "Untitled";
         const description = getProp('SEO Description') || getProp('Description') || getProp('description') || "";
         const pubDatetime = getProp('Publish Date') || getProp('pubDatetime') || page.created_time;
@@ -86,7 +98,7 @@ async function processPage(page) {
         const draft = status !== 'Published'; // Only publish if Status = "Published"
 
         const tags = getProp('Tags') || getProp('tags') || [];
-        const slug = getProp('Slug') || getProp('slug') || id;
+        const slug = getProp('Slug') || getProp('slug') || slugify(title) || id;
         const readingTime = getProp('Reading Time') || null;
 
         // Handle cover image (check "Cover Image" property first, then Notion's built-in cover)
