@@ -20,5 +20,4 @@ export const SITE = {
   dir: "ltr", // "rtl" | "auto"
   lang: "en", // html lang code. Set this empty and default will be "en"
   timezone: "Asia/Kolkata", // IST - Indian Standard Time
-  googleAnalyticsId: "G-XXXXXXXXXX", // Replace with your GA4 Measurement ID
 } as const;
