@@ -130,6 +130,29 @@ const structuredData = {
 
     <ClientRouter />
 
+    {
+      SITE.googleAnalyticsId &&
+        SITE.googleAnalyticsId !== "G-XXXXXXXXXX" &&
+        import.meta.env.PROD && (
+          <>
+            <script
+              is:inline
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${SITE.googleAnalyticsId}`}
+            />
+            <script
+              is:inline
+              set:html={`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${SITE.googleAnalyticsId}');
+              `}
+            />
+          </>
+        )
+    }
+
     <script is:inline src="/toggle-theme.js"></script>
   </head>
   <body>
