@@ -15,6 +15,6 @@ This blog is where I write through things I'm learning and building. I'm interes
 
 Outside of work, I play chess. It's a clean way to stay sharp and a constant reminder that small mistakes add up. [Challenge me if you're up for a game](https://lichess.org/@/ShivamRajdev).
 
-If you want to reach me, email works best: [shivam.rajdev1998@gmail.com](mailto:shivam.rajdev1998@gmail.com).
+If you want to reach me, email works best: [hello@shivamrajdev.com](mailto:hello@shivamrajdev.com).
 
 I'm also on [LinkedIn](https://www.linkedin.com/in/rajdevshivam111/) and [GitHub](https://github.com/RajdevShivam).
