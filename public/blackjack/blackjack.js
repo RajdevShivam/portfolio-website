@@ -695,15 +695,17 @@ function initBlackjack() {
     BJGame.init();
 }
 
-// Run immediately if DOM is ready (script is at bottom of page),
-// otherwise wait for DOMContentLoaded
+// astro:page-load fires on both initial load and view-transition navigation
+// (Astro's ClientRouter always dispatches it). This is the single init path.
+document.addEventListener('astro:page-load', () => {
+    bjInitialized = false;
+    initBlackjack();
+});
+
+// Fallback for direct navigation without ClientRouter (e.g. hard refresh,
+// opening the URL directly in a browser without JS transitions)
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initBlackjack);
 } else {
     initBlackjack();
 }
-// For Astro view transitions
-document.addEventListener('astro:page-load', () => {
-    bjInitialized = false;
-    initBlackjack();
-});
