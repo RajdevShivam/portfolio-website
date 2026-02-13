@@ -15,7 +15,7 @@ const n2m = new NotionToMarkdown({ notionClient: notion });
 const BLOG_DIR = path.join(process.cwd(), "src/data/blog");
 
 async function fetchNotionPosts() {
-    const databaseId = "YOUR_NOTION_DATABASE_ID";
+    const databaseId = process.env.NOTION_DATABASE_ID;
 
     console.log("Fetching posts from Notion using search...");
     const targetId = databaseId.replace(/-/g, '').toLowerCase();
