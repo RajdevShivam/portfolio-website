@@ -119,11 +119,11 @@
         // ===== BJ Soft / Pair / Bust / Blackjack =====
         group('BJ — Hand Classification');
 
-        // isSoft
-        assert(BJ.isSoft([card('A'), card('6')]) === true, 'A+6 is soft');
-        assert(BJ.isSoft([card('A'), card('K')]) === false, 'A+K is NOT soft (21, ace counted as 1 to avoid bust? no — 21 exact)');
-        assert(BJ.isSoft([card('K'), card('7')]) === false, 'K+7 is hard');
-        assert(BJ.isSoft([card('A'), card('5'), card('5')]) === false, 'A+5+5 = 21 hard (ace used as 1)');
+        // isSoft: true when an ace is still counted as 11 (no overflow)
+        assert(BJ.isSoft([card('A'), card('6')]) === true, 'A+6 is soft (ace=11, total=17)');
+        assert(BJ.isSoft([card('A'), card('K')]) === true, 'A+K is soft (ace=11, total=21 exactly)');
+        assert(BJ.isSoft([card('K'), card('7')]) === false, 'K+7 is hard (no ace)');
+        assert(BJ.isSoft([card('A'), card('5'), card('5')]) === true, 'A+5+5 = 21 soft (ace=11 gives 21, no overflow)');
 
         // isPair
         assert(BJ.isPair([card('8'), card('8')]) === true, '8+8 is a pair');
@@ -145,10 +145,14 @@
         // ===== Basic Strategy Tests =====
         group('Strategy — Hard Hands');
 
-        // Hard 8 vs dealer 5 → D (double)
+        // Hard 8 vs dealer 5 → H (hit — basic strategy never doubles hard 8)
         const h8v5 = Strategy.getOptimal([card('5'), card('3')], card('5'));
         assert(h8v5.type === 'hard', 'Hard 8 identified as hard hand');
-        assert(h8v5.action === 'D', `Hard 8 vs 5: expected D, got ${h8v5.action}`);
+        assert(h8v5.action === 'H', `Hard 8 vs 5: expected H, got ${h8v5.action}`);
+
+        // Hard 9 vs dealer 3 → D (double)
+        const h9v3 = Strategy.getOptimal([card('5'), card('4')], card('3'));
+        assert(h9v3.action === 'D', `Hard 9 vs 3: expected D, got ${h9v3.action}`);
 
         // Hard 17 vs dealer 10 → S (stand)
         const h17v10 = Strategy.getOptimal([card('K'), card('7')], card('10'));

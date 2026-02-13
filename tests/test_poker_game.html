@@ -163,9 +163,11 @@
         assert(Preflop.tier('72o') === 'unplayable', '72o is unplayable');
         assert(Preflop.tier('JTs') === 'playable', 'JTs is playable');
 
-        // Preflop recommend
-        assert(Preflop.recommend(c('A','hearts'), c('A','spades'), 'BTN') === 'RAISE', 'AA on BTN is RAISE');
-        assert(Preflop.recommend(c('7','hearts'), c('2','clubs'), 'UTG') === 'FOLD', '72o UTG is FOLD');
+        // Preflop recommend (returns { action, tier, notation })
+        assert(Preflop.recommend(c('A','hearts'), c('A','spades'), 'BTN').action === 'RAISE', 'AA on BTN is RAISE');
+        assert(Preflop.recommend(c('7','hearts'), c('2','clubs'), 'UTG').action === 'FOLD', '72o UTG is FOLD');
+        assert(Preflop.recommend(c('K','hearts'), c('K','spades'), 'UTG').action === 'RAISE', 'KK UTG is RAISE');
+        assert(Preflop.recommend(c('7','hearts'), c('2','clubs'), 'BTN').action === 'FOLD', '72o BTN is FOLD');
 
         // ===== AI Decision Tests =====
         group('AI Decision Engine');
