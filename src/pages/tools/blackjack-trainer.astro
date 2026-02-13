@@ -1,0 +1,168 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+---
+
+<Layout title="Blackjack Trainer | Order in Chaos">
+  <Header />
+  <main id="main-content">
+    <section class="bj-section-wrap">
+      <div class="bj-container" id="bj-app">
+        <div class="bj-tabs">
+          <button class="active" data-panel="bj-strategy-panel">Strategy Trainer</button>
+          <button data-panel="bj-counting-panel">Card Counting</button>
+          <button data-panel="bj-game-panel">Play Game</button>
+          <button id="bj-sound-btn" style="margin-left:auto; background:none; border:1px solid var(--bj-border, #e5e7eb); font-size:0.85rem; padding:0.2rem 0.5rem; border-radius:0.375rem; cursor:pointer;">🔇</button>
+          <button id="bj-stats-btn" style="background:none; border:1px solid var(--bj-border, #e5e7eb); font-size:0.75rem; padding:0.3rem 0.6rem; border-radius:0.375rem; cursor:pointer; color:var(--bj-text-muted, #6b7280);">Stats</button>
+        </div>
+
+        <!-- Strategy Trainer -->
+        <div id="bj-strategy-panel" class="bj-panel active">
+          <div class="bj-felt">
+            <div class="bj-section">
+              <div class="bj-hand-label">Dealer</div>
+              <div class="bj-hand-area" id="bj-strat-dealer-hand"></div>
+            </div>
+            <div class="bj-section">
+              <div class="bj-hand-label">Your Hand <span class="bj-hand-value" id="bj-strat-player-value"></span></div>
+              <div class="bj-hand-area" id="bj-strat-player-hand"></div>
+            </div>
+          </div>
+          <div class="bj-action-bar" id="bj-strat-actions">
+            <button class="bj-action-btn bj-btn-hit" data-action="H">Hit <kbd>H</kbd></button>
+            <button class="bj-action-btn bj-btn-stand" data-action="S">Stand <kbd>S</kbd></button>
+            <button class="bj-action-btn bj-btn-double" data-action="D">Double <kbd>D</kbd></button>
+            <button class="bj-action-btn bj-btn-split" data-action="P" disabled>Split <kbd>P</kbd></button>
+          </div>
+          <div class="bj-feedback" id="bj-strat-feedback"></div>
+          <div class="bj-stats-bar">
+            <span>Accuracy: <strong id="bj-strat-accuracy">0/0 (0%)</strong></span>
+            <span>Streak: <strong id="bj-strat-streak">0</strong></span>
+            <span>Best: <strong id="bj-strat-best">0</strong></span>
+          </div>
+          <button class="bj-chart-toggle" id="bj-chart-toggle">Show Strategy Chart</button>
+          <div class="bj-chart-container hidden" id="bj-strategy-chart"></div>
+        </div>
+
+        <!-- Card Counting -->
+        <div id="bj-counting-panel" class="bj-panel">
+          <div class="bj-counting-controls">
+            <label>Drill:
+              <select id="bj-drill-type">
+                <option value="single">Single Card</option>
+                <option value="pairs">Card Pairs</option>
+                <option value="batch">Batch (5-12 cards)</option>
+              </select>
+            </label>
+            <label>Speed:
+              <input type="range" id="bj-card-speed" min="400" max="3000" value="1500" step="100">
+              <span id="bj-speed-label">1.5s</span>
+            </label>
+            <label>Cards:
+              <input type="range" id="bj-card-count-num" min="3" max="20" value="8" step="1">
+              <span id="bj-count-num-label">8</span>
+            </label>
+            <button class="bj-action-btn bj-btn-primary" id="bj-start-drill">Start Drill</button>
+          </div>
+          <div class="bj-felt">
+            <div class="bj-card-flash-area" id="bj-counting-display">
+              <div style="text-align:center; color:rgba(255,255,255,0.4);">
+                <div style="font-size:1.3rem; margin-bottom:0.4rem;">Hi-Lo Card Counting</div>
+                <div>Press "Start Drill" to begin</div>
+              </div>
+            </div>
+            <div class="bj-hilo-ref">
+              <span class="plus">2-6: +1</span>
+              <span class="zero">7-9: 0</span>
+              <span class="minus">10-A: -1</span>
+            </div>
+          </div>
+          <div class="bj-count-input-area" id="bj-count-input-area" style="display:none;">
+            <label>Running Count:</label>
+            <input type="number" id="bj-rc-input">
+            <button class="bj-action-btn bj-btn-primary" id="bj-submit-count">Check <kbd>Enter</kbd></button>
+          </div>
+          <div class="bj-feedback" id="bj-count-feedback"></div>
+          <div class="bj-stats-bar">
+            <span>Accuracy: <strong id="bj-count-accuracy">0/0 (0%)</strong></span>
+            <span>Streak: <strong id="bj-count-streak">0</strong></span>
+          </div>
+        </div>
+
+        <!-- Full Game -->
+        <div id="bj-game-panel" class="bj-panel">
+          <!-- Stats bar above the felt -->
+          <div class="bj-game-info-bar">
+            <div class="info-item"><span class="info-label">Bankroll</span><span class="info-value" id="bj-game-bankroll">$1000</span></div>
+            <div class="info-item"><span class="info-label">Current Bet</span><span class="info-value" id="bj-game-bet">$10</span></div>
+            <div class="info-item"><span class="info-label">Won</span><span class="info-value" id="bj-game-wins">0</span></div>
+            <div class="info-item"><span class="info-label">Played</span><span class="info-value" id="bj-game-total">0</span></div>
+            <div class="info-item" style="margin-left:auto;">
+              <span class="info-label">Count (RC / TC)</span>
+              <span class="info-value"><span id="bj-game-rc">0</span> / <span id="bj-game-tc">0.0</span></span>
+            </div>
+          </div>
+
+          <!-- Felt: dealer on top, player on bottom, bet controls inside -->
+          <div class="bj-felt bj-game-felt">
+            <div class="bj-section">
+              <div class="bj-hand-label">Dealer <span class="bj-hand-value" id="bj-game-dealer-value"></span></div>
+              <div class="bj-hand-area" id="bj-game-dealer-hand"></div>
+            </div>
+
+            <!-- Bet controls sit in the middle of the felt -->
+            <div class="bj-felt-bet-controls" id="bj-game-bet-controls">
+              <span class="bj-bet-label">Place your bet (min $10)</span>
+              <div class="bj-chips-row">
+                <div class="bj-chip bj-chip-10" data-chip="10">$10</div>
+                <div class="bj-chip bj-chip-25" data-chip="25">$25</div>
+                <div class="bj-chip bj-chip-100" data-chip="100">$100</div>
+                <button class="bj-action-btn bj-btn-deal" id="bj-deal-btn">Deal</button>
+              </div>
+              <div class="bj-rec-bet">Rec Bet: <span id="bj-game-rec-bet">$10</span></div>
+            </div>
+
+            <div class="bj-section">
+              <div class="bj-hand-label">Your Hand <span class="bj-hand-value" id="bj-game-player-value"></span></div>
+              <div class="bj-hand-area" id="bj-game-player-hand"></div>
+            </div>
+          </div>
+
+          <!-- Action bar below the felt -->
+          <div class="bj-action-bar" id="bj-game-actions" style="display:none;">
+            <button class="bj-action-btn bj-btn-hit" data-action="hit">Hit <kbd>H</kbd></button>
+            <button class="bj-action-btn bj-btn-stand" data-action="stand">Stand <kbd>S</kbd></button>
+            <button class="bj-action-btn bj-btn-double" data-action="double">Double <kbd>D</kbd></button>
+            <button class="bj-action-btn bj-btn-split" data-action="split" disabled>Split</button>
+          </div>
+          <div class="bj-feedback" id="bj-game-feedback"></div>
+          <div class="bj-feedback" id="bj-game-hint"></div>
+        </div>
+      </div>
+
+      <!-- Stats Modal -->
+      <div class="bj-modal-overlay" id="bj-stats-modal">
+        <div class="bj-modal">
+          <button class="bj-modal-close" id="bj-stats-close">&times;</button>
+          <h2>Your Stats</h2>
+          <div id="bj-stats-content"></div>
+          <button class="bj-action-btn bj-btn-secondary" id="bj-reset-stats" style="margin-top:0.75rem;">Reset All Stats</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Layout>
+
+<link rel="stylesheet" href="/blackjack/blackjack.css" />
+<script is:inline src="/blackjack/blackjack.js"></script>
+
+<style>
+  .bj-section-wrap {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0.5rem 1rem 1rem;
+  }
+</style>
