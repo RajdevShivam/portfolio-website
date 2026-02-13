@@ -1092,16 +1092,16 @@ const HoldemEngine = (() => {
         const allPlayers = state.players.filter(p => !p.busted);
 
         for (const level of allInAmounts) {
-            const contribution = level - prevLevel;
-            if (contribution <= 0) continue;
+            if (level <= prevLevel) continue;
             const pot = { amount: 0, eligible: [] };
             for (const p of allPlayers) {
-                if (p.totalInvested >= level) {
-                    pot.amount += contribution;
+                const contrib = Math.min(p.totalInvested, level) - prevLevel;
+                if (contrib > 0) {
+                    pot.amount += contrib;
                     if (!p.folded) pot.eligible.push(p.seatIndex);
                 }
             }
-            pots.push(pot);
+            if (pot.amount > 0) pots.push(pot);
             prevLevel = level;
         }
 
