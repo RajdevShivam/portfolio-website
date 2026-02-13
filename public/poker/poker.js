@@ -946,7 +946,7 @@ const HoldemEngine = (() => {
             return getPlayersInHand().filter(p => !p.allIn).length;
         }
 
-        if (countCanAct() <= 1) return;
+        if (countCanAct() === 0) return;
 
         while (iterations++ < maxIterations) {
             const player = state.players[currentIdx];
@@ -985,10 +985,15 @@ const HoldemEngine = (() => {
                 });
             }
 
+            const prevCurrentBet = state.currentBet;
             applyAction(currentIdx, action);
             if (onUpdate) onUpdate({ type: 'action', playerIndex: currentIdx, action });
 
-            if (action.action === 'raise' || action.action === 'allIn') {
+            // Only reopen action if the bet actually increased. A short all-in
+            // that doesn't meet/exceed the current bet should NOT reopen action.
+            const betIncreased = action.action === 'raise' ||
+                (action.action === 'allIn' && player.currentBet >= prevCurrentBet + state.minRaise);
+            if (betIncreased) {
                 lastRaiser = currentIdx;
                 actedSet = new Set([currentIdx]);
             } else {
@@ -998,8 +1003,8 @@ const HoldemEngine = (() => {
             // Check if only one player remains
             if (getPlayersInHand().length <= 1) break;
 
-            // Check if only one non-allIn player left (no more betting possible)
-            if (countCanAct() <= 1) break;
+            // If no non-allIn players can act, no further betting is possible
+            if (countCanAct() === 0) break;
 
             currentIdx = (currentIdx + 1) % state.players.length;
         }
