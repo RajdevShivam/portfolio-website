@@ -30,3 +30,12 @@ errors.txt
 # blog data (fetched from Notion)
 src/data/blog/*.md
 !src/data/blog/.gitkeep
+
+# log files
+*.log
+nul
+
+# debug/scratch scripts
+scripts/bare.cjs
+scripts/inspect.cjs
+cz.yaml
