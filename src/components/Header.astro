@@ -40,8 +40,9 @@ const isActive = (path: string) => {
     >
       <a
         href="/"
-        class="absolute py-1 text-xl leading-8 font-semibold whitespace-nowrap sm:static sm:my-auto sm:text-2xl sm:leading-none"
+        class="absolute py-1 text-xl leading-8 font-semibold whitespace-nowrap sm:static sm:my-auto sm:text-2xl sm:leading-none flex items-center gap-2"
       >
+        <img src="/logo.png" alt="SR logo" class="site-logo" />
         {SITE.title}
       </a>
       <nav
@@ -203,6 +204,21 @@ const isActive = (path: string) => {
 </script>
 
 <style>
+  .site-logo {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 640px) {
+    .site-logo {
+      width: 2.25rem;
+      height: 2.25rem;
+    }
+  }
+
   .nav-dropdown-wrap {
     position: relative;
   }

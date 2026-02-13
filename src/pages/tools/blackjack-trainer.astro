@@ -152,6 +152,13 @@ import Footer from "@/components/Footer.astro";
       </div>
     </section>
   </main>
+  <div class="bug-report-bar">
+    <a
+      href="https://github.com/RajdevShivam/portfolio-website/issues/new?labels=bug&title=[Blackjack]+Bug+Report"
+      target="_blank"
+      rel="noopener noreferrer"
+    >Found a bug? Report it on GitHub &rarr;</a>
+  </div>
   <Footer />
 </Layout>
 
@@ -159,6 +166,23 @@ import Footer from "@/components/Footer.astro";
 <script is:inline src="/blackjack/blackjack.js"></script>
 
 <style>
+  .bug-report-bar {
+    text-align: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    opacity: 0.5;
+  }
+
+  .bug-report-bar a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .bug-report-bar a:hover {
+    opacity: 0.8;
+  }
+
   .bj-section-wrap {
     width: 100%;
     max-width: 900px;

@@ -17,6 +17,13 @@ import Footer from "@/components/Footer.astro";
       </div>
     </div>
   </main>
+  <div class="bug-report-bar">
+    <a
+      href="https://github.com/RajdevShivam/portfolio-website/issues/new?labels=bug&title=[Poker]+Bug+Report"
+      target="_blank"
+      rel="noopener noreferrer"
+    >Found a bug? Report it on GitHub &rarr;</a>
+  </div>
   <Footer />
 </Layout>
 
@@ -24,6 +31,23 @@ import Footer from "@/components/Footer.astro";
 <script is:inline src="/poker/poker.js"></script>
 
 <style>
+  .bug-report-bar {
+    text-align: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    opacity: 0.5;
+  }
+
+  .bug-report-bar a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .bug-report-bar a:hover {
+    opacity: 0.8;
+  }
+
   .poker-section {
     width: 100%;
     max-width: 1100px;
