@@ -289,6 +289,10 @@ const StrategyTrainer = (() => {
 
     function init() {
         shoe = CardEngine.createShoe(6);
+        // Bind action buttons (re-bind on each init for view transitions)
+        document.querySelectorAll('#bj-strat-actions .bj-action-btn').forEach(btn => {
+            btn.onclick = () => answer(btn.dataset.action);
+        });
         deal();
         const s = Stats.load().strategy;
         updateStatDisplay('bj-strat', s);
@@ -335,23 +339,22 @@ const StrategyTrainer = (() => {
         setTimeout(deal, 1800);
     }
 
-    document.querySelectorAll('#bj-strat-actions .bj-action-btn').forEach(btn => {
-        btn.addEventListener('click', () => answer(btn.dataset.action));
-    });
-
     return { init, answer };
 })();
 
 // ========== STRATEGY CHART ==========
-(() => {
+function initStrategyChart() {
     const btn = document.getElementById('bj-chart-toggle');
     const container = document.getElementById('bj-strategy-chart');
     if (!btn || !container) return;
-    btn.addEventListener('click', () => {
+    container.innerHTML = '';
+    container.classList.add('hidden');
+    btn.textContent = 'Show Strategy Chart';
+    btn.onclick = () => {
         container.classList.toggle('hidden');
         btn.textContent = container.classList.contains('hidden') ? 'Show Strategy Chart' : 'Hide Strategy Chart';
         if (!container.classList.contains('hidden') && !container.innerHTML) renderChart();
-    });
+    };
 
     function renderChart() {
         const dealers = ['2','3','4','5','6','7','8','9','10','A'];
@@ -383,27 +386,12 @@ const StrategyTrainer = (() => {
         html += table('Pairs', Strategy.PAIRS, pairLabels);
         container.innerHTML = html;
     }
-})();
+}
 
 // ========== COUNTING TRAINER ==========
 const CountingTrainer = (() => {
     let shoe, dealtCards = [], timer;
-
-    const speedSlider = document.getElementById('bj-card-speed');
-    const speedLabel = document.getElementById('bj-speed-label');
-    const countNumSlider = document.getElementById('bj-card-count-num');
-    const countNumLabel = document.getElementById('bj-count-num-label');
-
-    if (speedSlider) speedSlider.addEventListener('input', () => speedLabel.textContent = (speedSlider.value / 1000).toFixed(1) + 's');
-    if (countNumSlider) countNumSlider.addEventListener('input', () => countNumLabel.textContent = countNumSlider.value);
-
-    const startBtn = document.getElementById('bj-start-drill');
-    const submitBtn = document.getElementById('bj-submit-count');
-    const rcInput = document.getElementById('bj-rc-input');
-
-    if (startBtn) startBtn.addEventListener('click', startDrill);
-    if (submitBtn) submitBtn.addEventListener('click', checkCount);
-    if (rcInput) rcInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkCount(); });
+    let speedSlider, speedLabel, countNumSlider, countNumLabel;
 
     function startDrill() {
         shoe = CardEngine.createShoe(6);
@@ -460,6 +448,23 @@ const CountingTrainer = (() => {
     }
 
     function init() {
+        // Re-bind elements and listeners (for view transitions)
+        speedSlider = document.getElementById('bj-card-speed');
+        speedLabel = document.getElementById('bj-speed-label');
+        countNumSlider = document.getElementById('bj-card-count-num');
+        countNumLabel = document.getElementById('bj-count-num-label');
+
+        if (speedSlider) speedSlider.oninput = () => speedLabel.textContent = (speedSlider.value / 1000).toFixed(1) + 's';
+        if (countNumSlider) countNumSlider.oninput = () => countNumLabel.textContent = countNumSlider.value;
+
+        const startBtn = document.getElementById('bj-start-drill');
+        const submitBtn = document.getElementById('bj-submit-count');
+        const rcInput = document.getElementById('bj-rc-input');
+
+        if (startBtn) startBtn.onclick = startDrill;
+        if (submitBtn) submitBtn.onclick = checkCount;
+        if (rcInput) rcInput.onkeydown = e => { if (e.key === 'Enter') checkCount(); };
+
         const s = Stats.load().counting;
         updateStatDisplay('bj-count', s);
     }
@@ -494,7 +499,79 @@ const BJGame = (() => {
     function init() {
         shoe = CardEngine.createShoe(6);
         loadStats();
+        bindGameListeners();
         showBetting();
+    }
+
+    function bindGameListeners() {
+        // Chips
+        document.querySelectorAll('.bj-chip').forEach(chip => {
+            chip.onclick = () => {
+                currentBet = parseInt(chip.dataset.chip);
+                document.getElementById('bj-game-bet').textContent = `$${currentBet}`;
+                Sound.click();
+            };
+        });
+
+        // Deal
+        const dealBtn = document.getElementById('bj-deal-btn');
+        if (dealBtn) dealBtn.onclick = () => {
+            if (phase !== 'betting') return;
+            if (currentBet < 10) currentBet = 10;
+            if (currentBet > gameStats.bankroll) { alert('Not enough bankroll!'); return; }
+            if (CardEngine.needsShuffle(shoe)) shoe = CardEngine.createShoe(6);
+
+            playerCards = [CardEngine.deal(shoe), CardEngine.deal(shoe)];
+            dealerCards = [CardEngine.deal(shoe), CardEngine.deal(shoe)];
+
+            renderHand(playerCards, 'bj-game-player-hand');
+            renderHand(dealerCards, 'bj-game-dealer-hand', { hideIndex: 1 });
+            document.getElementById('bj-game-player-value').textContent = BJ.handValue(playerCards);
+            document.getElementById('bj-game-dealer-value').textContent = dealerCards[0].rank;
+
+            if (BJ.isBlackjack(playerCards)) { revealAndResolve(); return; }
+
+            phase = 'playing';
+            document.getElementById('bj-game-bet-controls').style.display = 'none';
+            document.getElementById('bj-game-actions').style.display = 'flex';
+            const splitBtn = document.querySelector('#bj-game-actions [data-action="split"]');
+            if (splitBtn) splitBtn.disabled = !BJ.isPair(playerCards);
+            showStrategyHint();
+            Sound.deal();
+            updateDisplay();
+        };
+
+        // Player actions
+        document.querySelectorAll('#bj-game-actions .bj-action-btn').forEach(btn => {
+            btn.onclick = () => {
+                if (phase !== 'playing') return;
+                const action = btn.dataset.action;
+                if (action === 'hit') {
+                    playerCards.push(CardEngine.deal(shoe));
+                    renderHand(playerCards, 'bj-game-player-hand');
+                    document.getElementById('bj-game-player-value').textContent = BJ.handValue(playerCards);
+                    Sound.deal();
+                    updateDisplay();
+                    if (BJ.isBust(playerCards)) { revealAndResolve(); return; }
+                    if (BJ.handValue(playerCards) === 21) { revealAndResolve(); return; }
+                    showStrategyHint();
+                } else if (action === 'stand') {
+                    revealAndResolve();
+                } else if (action === 'double') {
+                    if (currentBet * 2 > gameStats.bankroll) { alert('Not enough to double!'); return; }
+                    currentBet *= 2;
+                    document.getElementById('bj-game-bet').textContent = `$${currentBet}`;
+                    playerCards.push(CardEngine.deal(shoe));
+                    renderHand(playerCards, 'bj-game-player-hand');
+                    document.getElementById('bj-game-player-value').textContent = BJ.handValue(playerCards);
+                    Sound.deal();
+                    updateDisplay();
+                    revealAndResolve();
+                } else if (action === 'split') {
+                    showFeedback('bj-game-feedback', true, 'Split not yet supported — coming soon!');
+                }
+            };
+        });
     }
 
     function showBetting() {
@@ -510,81 +587,12 @@ const BJGame = (() => {
         updateDisplay();
     }
 
-    // Chips
-    document.querySelectorAll('.bj-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-            currentBet = parseInt(chip.dataset.chip);
-            document.getElementById('bj-game-bet').textContent = `$${currentBet}`;
-            Sound.click();
-        });
-    });
-
-    // Deal
-    const dealBtn = document.getElementById('bj-deal-btn');
-    if (dealBtn) dealBtn.addEventListener('click', () => {
-        if (phase !== 'betting') return;
-        if (currentBet < 10) currentBet = 10;
-        if (currentBet > gameStats.bankroll) { alert('Not enough bankroll!'); return; }
-        if (CardEngine.needsShuffle(shoe)) shoe = CardEngine.createShoe(6);
-
-        playerCards = [CardEngine.deal(shoe), CardEngine.deal(shoe)];
-        dealerCards = [CardEngine.deal(shoe), CardEngine.deal(shoe)];
-
-        renderHand(playerCards, 'bj-game-player-hand');
-        renderHand(dealerCards, 'bj-game-dealer-hand', { hideIndex: 1 });
-        document.getElementById('bj-game-player-value').textContent = BJ.handValue(playerCards);
-        document.getElementById('bj-game-dealer-value').textContent = dealerCards[0].rank;
-
-        if (BJ.isBlackjack(playerCards)) { revealAndResolve(); return; }
-
-        phase = 'playing';
-        document.getElementById('bj-game-bet-controls').style.display = 'none';
-        document.getElementById('bj-game-actions').style.display = 'flex';
-        const splitBtn = document.querySelector('#bj-game-actions [data-action="split"]');
-        if (splitBtn) splitBtn.disabled = !BJ.isPair(playerCards);
-        showStrategyHint();
-        Sound.deal();
-        updateDisplay();
-    });
-
     function showStrategyHint() {
         const opt = Strategy.getOptimal(playerCards, dealerCards[0]);
         const hint = document.getElementById('bj-game-hint');
         hint.className = 'bj-feedback show hint';
         hint.innerHTML = `Strategy suggests: <strong>${Strategy.ACTION_NAMES[opt.action]}</strong> (${opt.label} vs ${dealerCards[0].rank})`;
     }
-
-    // Player actions
-    document.querySelectorAll('#bj-game-actions .bj-action-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (phase !== 'playing') return;
-            const action = btn.dataset.action;
-            if (action === 'hit') {
-                playerCards.push(CardEngine.deal(shoe));
-                renderHand(playerCards, 'bj-game-player-hand');
-                document.getElementById('bj-game-player-value').textContent = BJ.handValue(playerCards);
-                Sound.deal();
-                updateDisplay();
-                if (BJ.isBust(playerCards)) { revealAndResolve(); return; }
-                if (BJ.handValue(playerCards) === 21) { revealAndResolve(); return; }
-                showStrategyHint();
-            } else if (action === 'stand') {
-                revealAndResolve();
-            } else if (action === 'double') {
-                if (currentBet * 2 > gameStats.bankroll) { alert('Not enough to double!'); return; }
-                currentBet *= 2;
-                document.getElementById('bj-game-bet').textContent = `$${currentBet}`;
-                playerCards.push(CardEngine.deal(shoe));
-                renderHand(playerCards, 'bj-game-player-hand');
-                document.getElementById('bj-game-player-value').textContent = BJ.handValue(playerCards);
-                Sound.deal();
-                updateDisplay();
-                revealAndResolve();
-            } else if (action === 'split') {
-                showFeedback('bj-game-feedback', true, 'Split not yet supported — coming soon!');
-            }
-        });
-    });
 
     function revealAndResolve() {
         phase = 'result';
@@ -633,13 +641,13 @@ const BJGame = (() => {
 })();
 
 // ========== STATS MODAL ==========
-(() => {
+function initStatsModal() {
     const btn = document.getElementById('bj-stats-btn');
     const modal = document.getElementById('bj-stats-modal');
     const closeBtn = document.getElementById('bj-stats-close');
     const resetBtn = document.getElementById('bj-reset-stats');
 
-    if (btn) btn.addEventListener('click', () => {
+    if (btn) btn.onclick = () => {
         const s = Stats.load();
         const pctStrat = s.strategy.total ? Math.round(s.strategy.correct / s.strategy.total * 100) : 0;
         const pctCount = s.counting.total ? Math.round(s.counting.correct / s.counting.total * 100) : 0;
@@ -650,15 +658,15 @@ const BJGame = (() => {
                 <tr><td>Game</td><td>${s.game.won} won / ${s.game.played} played | Bankroll: $${s.game.bankroll} (Peak: $${s.game.peak})</td></tr>
             </table>`;
         modal.classList.add('show');
-    });
-    if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('show'));
-    if (resetBtn) resetBtn.addEventListener('click', () => {
+    };
+    if (closeBtn) closeBtn.onclick = () => modal.classList.remove('show');
+    if (resetBtn) resetBtn.onclick = () => {
         if (confirm('Reset all blackjack stats? This cannot be undone.')) {
             Stats.reset();
             modal.classList.remove('show');
         }
-    });
-})();
+    };
+}
 
 // ========== KEYBOARD SHORTCUTS ==========
 document.addEventListener('keydown', e => {
@@ -690,6 +698,8 @@ function initBlackjack() {
     bjInitialized = true;
     initTabs();
     initSoundToggle();
+    initStrategyChart();
+    initStatsModal();
     StrategyTrainer.init();
     CountingTrainer.init();
     BJGame.init();

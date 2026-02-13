@@ -444,6 +444,13 @@ html[data-theme="dark"] {
 
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
+    .bj-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .bj-tabs::-webkit-scrollbar { display: none; }
+    .bj-tabs button { font-size: 0.7rem; padding: 0.35rem 0.6rem; }
     .bj-felt { padding: 1rem; }
     .bj-felt .card { width: 3rem; height: 4.5rem; font-size: 12px; }
     .bj-felt .card-back { width: 3rem; height: 4.5rem; }

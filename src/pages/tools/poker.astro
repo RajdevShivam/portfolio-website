@@ -10,12 +10,6 @@ import Footer from "@/components/Footer.astro";
     <section class="poker-section">
       <div id="poker-app"></div>
     </section>
-    <div id="rotate-overlay">
-      <div class="rotate-message">
-        <span class="rotate-icon">&#128241;</span>
-        <p>Please rotate your device to landscape</p>
-      </div>
-    </div>
   </main>
   <div class="bug-report-bar">
     <a
@@ -25,6 +19,12 @@ import Footer from "@/components/Footer.astro";
     >Found a bug? Report it on GitHub &rarr;</a>
   </div>
   <Footer />
+  <div id="rotate-overlay">
+    <div class="rotate-message">
+      <span class="rotate-icon">&#128241;</span>
+      <p>Please rotate your device to landscape</p>
+    </div>
+  </div>
 </Layout>
 
 <link rel="stylesheet" href="/poker/poker.css" />
