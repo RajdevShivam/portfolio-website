@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Game Tests</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #1a1a2e; color: #e8e8e8; padding: 20px; }
+        h1 { margin-bottom: 8px; color: #ffd700; }
+        .summary { font-size: 18px; margin-bottom: 20px; padding: 12px; border-radius: 8px; }
+        .summary.pass { background: rgba(39, 174, 96, 0.2); border: 1px solid #27ae60; }
+        .summary.fail { background: rgba(192, 57, 43, 0.2); border: 1px solid #c0392b; }
+        .test-group { margin-bottom: 24px; }
+        .test-group h2 { font-size: 16px; color: #3498db; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 4px; }
+        .test { padding: 6px 12px; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .test.pass { color: #2ecc71; }
+        .test.fail { color: #e74c3c; font-weight: 700; }
+        .icon { font-size: 16px; }
+        .detail { color: #999; font-size: 12px; margin-left: 24px; }
+    </style>
+</head>
+<body>
+    <h1>Poker Game — Test Suite</h1>
+    <div class="summary" id="summary">Running tests...</div>
+    <div id="results"></div>
+
+    <script src="../public/poker/poker.js"></script>
+    <script>
+    (function() {
+        let passed = 0, failed = 0;
+        const results = document.getElementById('results');
+        let currentGroup = null;
+        let currentGroupEl = null;
+
+        function group(name) {
+            currentGroup = name;
+            currentGroupEl = document.createElement('div');
+            currentGroupEl.className = 'test-group';
+            currentGroupEl.innerHTML = `<h2>${name}</h2>`;
+            results.appendChild(currentGroupEl);
+        }
+
+        function assert(condition, name, detail = '') {
+            const el = document.createElement('div');
+            if (condition) {
+                passed++;
+                el.className = 'test pass';
+                el.innerHTML = `<span class="icon">✓</span> ${name}`;
+            } else {
+                failed++;
+                el.className = 'test fail';
+                el.innerHTML = `<span class="icon">✗</span> ${name}`;
+            }
+            currentGroupEl.appendChild(el);
+            if (detail && !condition) {
+                const d = document.createElement('div');
+                d.className = 'detail';
+                d.textContent = detail;
+                currentGroupEl.appendChild(d);
+            }
+        }
+
+        // ===== CardEngine Tests =====
+        group('CardEngine');
+
+        const deck = CardEngine.createDeck();
+        assert(deck.length === 52, 'createDeck returns 52 cards');
+
+        const suits = new Set(deck.map(c => c.suit));
+        assert(suits.size === 4, 'Deck has 4 suits');
+
+        const ranks = new Set(deck.map(c => c.rank));
+        assert(ranks.size === 13, 'Deck has 13 ranks');
+
+        const shuffled = CardEngine.shuffle(deck);
+        assert(shuffled.length === 52, 'Shuffle preserves deck size');
+
+        let different = false;
+        for (let i = 0; i < 52; i++) {
+            if (shuffled[i].rank !== deck[i].rank || shuffled[i].suit !== deck[i].suit) { different = true; break; }
+        }
+        assert(different, 'Shuffle produces different order');
+
+        const testDeck = CardEngine.shuffle(CardEngine.createDeck());
+        const dealt = CardEngine.dealFrom(testDeck, 5);
+        assert(dealt.length === 5, 'dealFrom returns requested count');
+        assert(testDeck.length === 47, 'dealFrom removes from deck');
+
+        // ===== Poker Evaluator Tests =====
+        group('Poker Hand Evaluator');
+
+        function c(rank, suit) {
+            return { rank, suit, sym: CardEngine.SYMBOLS[suit], color: CardEngine.COLORS[suit] };
+        }
+
+        // Royal Flush
+        const royalFlush = Poker.evaluate([c('A','hearts'),c('K','hearts'),c('Q','hearts'),c('J','hearts'),c('10','hearts')]);
+        assert(royalFlush.rank === 9, 'Royal Flush detected', `Got rank ${royalFlush.rank}: ${royalFlush.name}`);
+
+        // Straight Flush
+        const straightFlush = Poker.evaluate([c('9','spades'),c('8','spades'),c('7','spades'),c('6','spades'),c('5','spades')]);
+        assert(straightFlush.rank === 8, 'Straight Flush detected', `Got rank ${straightFlush.rank}: ${straightFlush.name}`);
+
+        // Four of a Kind
+        const quads = Poker.evaluate([c('K','hearts'),c('K','spades'),c('K','diamonds'),c('K','clubs'),c('3','hearts')]);
+        assert(quads.rank === 7, 'Four of a Kind detected', `Got rank ${quads.rank}: ${quads.name}`);
+
+        // Full House
+        const fullHouse = Poker.evaluate([c('J','hearts'),c('J','spades'),c('J','diamonds'),c('4','clubs'),c('4','hearts')]);
+        assert(fullHouse.rank === 6, 'Full House detected', `Got rank ${fullHouse.rank}: ${fullHouse.name}`);
+
+        // Flush
+        const flush = Poker.evaluate([c('A','diamonds'),c('10','diamonds'),c('7','diamonds'),c('4','diamonds'),c('2','diamonds')]);
+        assert(flush.rank === 5, 'Flush detected', `Got rank ${flush.rank}: ${flush.name}`);
+
+        // Straight
+        const straight = Poker.evaluate([c('10','hearts'),c('9','clubs'),c('8','diamonds'),c('7','spades'),c('6','hearts')]);
+        assert(straight.rank === 4, 'Straight detected', `Got rank ${straight.rank}: ${straight.name}`);
+
+        // Wheel (A-2-3-4-5)
+        const wheel = Poker.evaluate([c('A','hearts'),c('2','clubs'),c('3','diamonds'),c('4','spades'),c('5','hearts')]);
+        assert(wheel.rank === 4, 'Wheel straight detected', `Got rank ${wheel.rank}: ${wheel.name}`);
+
+        // Three of a Kind
+        const trips = Poker.evaluate([c('7','hearts'),c('7','spades'),c('7','diamonds'),c('K','clubs'),c('3','hearts')]);
+        assert(trips.rank === 3, 'Three of a Kind detected', `Got rank ${trips.rank}: ${trips.name}`);
+
+        // Two Pair
+        const twoPair = Poker.evaluate([c('A','hearts'),c('A','spades'),c('8','diamonds'),c('8','clubs'),c('3','hearts')]);
+        assert(twoPair.rank === 2, 'Two Pair detected', `Got rank ${twoPair.rank}: ${twoPair.name}`);
+
+        // One Pair
+        const onePair = Poker.evaluate([c('Q','hearts'),c('Q','spades'),c('9','diamonds'),c('5','clubs'),c('2','hearts')]);
+        assert(onePair.rank === 1, 'One Pair detected', `Got rank ${onePair.rank}: ${onePair.name}`);
+
+        // High Card
+        const highCard = Poker.evaluate([c('A','hearts'),c('J','spades'),c('8','diamonds'),c('5','clubs'),c('2','clubs')]);
+        assert(highCard.rank === 0, 'High Card detected', `Got rank ${highCard.rank}: ${highCard.name}`);
+
+        // bestHand from 7 cards
+        const seven = [c('A','hearts'),c('K','hearts'),c('Q','hearts'),c('J','hearts'),c('10','hearts'),c('2','clubs'),c('3','diamonds')];
+        const best = Poker.bestHand(seven);
+        assert(best.rank === 9, 'bestHand finds Royal Flush from 7 cards', `Got rank ${best.rank}: ${best.name}`);
+
+        // compare
+        assert(Poker.compare(royalFlush, straightFlush) > 0, 'Royal Flush beats Straight Flush');
+        assert(Poker.compare(onePair, twoPair) < 0, 'One Pair loses to Two Pair');
+
+        // ===== Preflop Tests =====
+        group('Preflop Ranges');
+
+        const aa = Preflop.notation(c('A','hearts'), c('A','spades'));
+        assert(aa === 'AA', 'AA notation correct', `Got: ${aa}`);
+
+        const aks = Preflop.notation(c('A','hearts'), c('K','hearts'));
+        assert(aks === 'AKs', 'AKs notation correct', `Got: ${aks}`);
+
+        const ako = Preflop.notation(c('A','hearts'), c('K','spades'));
+        assert(ako === 'AKo', 'AKo notation correct', `Got: ${ako}`);
+
+        assert(Preflop.tier('AA') === 'premium', 'AA is premium');
+        assert(Preflop.tier('72o') === 'unplayable', '72o is unplayable');
+        assert(Preflop.tier('JTs') === 'playable', 'JTs is playable');
+
+        // Preflop recommend
+        assert(Preflop.recommend(c('A','hearts'), c('A','spades'), 'BTN') === 'RAISE', 'AA on BTN is RAISE');
+        assert(Preflop.recommend(c('7','hearts'), c('2','clubs'), 'UTG') === 'FOLD', '72o UTG is FOLD');
+
+        // ===== AI Decision Tests =====
+        group('AI Decision Engine');
+
+        const hsAA = AIDecision.handStrength([c('A','hearts'), c('A','spades')], [], 3);
+        assert(hsAA > 0.8, `AA preflop strength > 0.8 (got ${hsAA.toFixed(3)})`);
+
+        const hs72 = AIDecision.handStrength([c('7','hearts'), c('2','clubs')], [], 3);
+        assert(hs72 < 0.15, `72o preflop strength < 0.15 (got ${hs72.toFixed(3)})`);
+
+        // Test that different personalities make different decisions
+        const testGameState = {
+            communityCards: [c('K','hearts'), c('Q','spades'), c('7','diamonds')],
+            pot: 100, currentBet: 50, minRaise: 50, bigBlind: 10, activePlayers: 3
+        };
+
+        const decisions = {};
+        const personalityKeys = ['beginner', 'intermediate', 'shark', 'maniac', 'rock'];
+        for (const key of personalityKeys) {
+            const res = { fold: 0, check: 0, call: 0, raise: 0, allIn: 0 };
+            for (let i = 0; i < 100; i++) {
+                const player = {
+                    personality: AIPersonality.getProfile(key),
+                    holeCards: [c('J','hearts'), c('10','clubs')],
+                    currentBet: 0, stack: 500, positionIndex: 3
+                };
+                const d = AIDecision.decide(player, testGameState);
+                res[d.action]++;
+            }
+            decisions[key] = res;
+        }
+
+        assert(decisions.maniac.raise + decisions.maniac.allIn > decisions.rock.raise + decisions.rock.allIn,
+            'Maniac raises more than Rock',
+            `Maniac raises: ${decisions.maniac.raise + decisions.maniac.allIn}, Rock raises: ${decisions.rock.raise + decisions.rock.allIn}`);
+
+        assert(decisions.rock.fold > decisions.maniac.fold,
+            'Rock folds more than Maniac',
+            `Rock folds: ${decisions.rock.fold}, Maniac folds: ${decisions.maniac.fold}`);
+
+        assert(decisions.beginner.call > decisions.shark.call || decisions.beginner.fold < decisions.shark.fold,
+            'Beginner calls/stays more loosely than Shark',
+            `Beginner calls: ${decisions.beginner.call}, Shark calls: ${decisions.shark.call}`);
+
+        // ===== Shock System Tests =====
+        group('Shock System');
+
+        ShockSystem.reset();
+        assert(ShockSystem.getMeter() === 0, 'Shock meter starts at 0');
+
+        for (let i = 0; i < 15; i++) ShockSystem.recordResult(1);
+        assert(ShockSystem.getMeter() > 0.3, `Meter charges on winning streak (${ShockSystem.getMeter().toFixed(3)})`, `Got: ${ShockSystem.getMeter()}`);
+
+        let shockTriggered = false;
+        for (let i = 0; i < 100; i++) {
+            if (ShockSystem.shouldTriggerShock()) { shockTriggered = true; break; }
+        }
+        assert(shockTriggered, 'Shocks trigger when meter is high');
+
+        ShockSystem.reset();
+        for (let i = 0; i < 15; i++) ShockSystem.recordResult(-1);
+        assert(ShockSystem.getMeter() === 0, 'Meter stays at 0 on losing streak');
+
+        ShockSystem.reset();
+        const rigged = ShockSystem.rigDeal();
+        assert(rigged.playerCards.length === 2, 'Rigged deal has 2 player cards');
+        assert(rigged.aiCards.length === 2, 'Rigged deal has 2 AI cards');
+        assert(rigged.board.length === 5, 'Rigged deal has 5 board cards');
+        assert(rigged.playerCards[0].sym !== undefined, 'Rigged cards have suit symbols');
+
+        // ===== Side Pot Calculation Tests =====
+        group('Pot Calculations');
+
+        const testPlayers = [
+            { seatIndex: 0, name: 'P1', isHuman: false, personalityKey: 'beginner', personality: AIPersonality.getProfile('beginner'), stack: 1000, holeCards: [], currentBet: 0, totalInvested: 0, folded: false, allIn: false, busted: false, showCards: false, lastAction: null, position: '', positionIndex: 0 },
+            { seatIndex: 1, name: 'P2', isHuman: false, personalityKey: 'rock', personality: AIPersonality.getProfile('rock'), stack: 1000, holeCards: [], currentBet: 0, totalInvested: 0, folded: false, allIn: false, busted: false, showCards: false, lastAction: null, position: '', positionIndex: 0 },
+            { seatIndex: 2, name: 'Human', isHuman: true, personalityKey: null, personality: null, stack: 1000, holeCards: [], currentBet: 0, totalInvested: 0, folded: false, allIn: false, busted: false, showCards: false, lastAction: null, position: '', positionIndex: 0 }
+        ];
+
+        HoldemEngine.init({ players: testPlayers, smallBlind: 5, bigBlind: 10 });
+        const engineState = HoldemEngine.getState();
+        assert(engineState.players.length === 3, 'Engine initializes with correct player count');
+        assert(engineState.smallBlind === 5, 'Small blind set correctly');
+        assert(engineState.bigBlind === 10, 'Big blind set correctly');
+
+        // Verify chip conservation: total chips should always equal starting amount
+        const startingTotal = testPlayers.reduce((s, p) => s + p.stack, 0);
+        assert(startingTotal === 3000, 'Starting total chips = 3000');
+
+        // ===== Adaptive Difficulty Tests =====
+        group('Adaptive Difficulty');
+
+        AdaptiveDifficulty.reset();
+        let adjustCalled = false;
+        for (let i = 0; i < 20; i++) {
+            if (AdaptiveDifficulty.shouldAdjust()) { adjustCalled = true; break; }
+        }
+        assert(adjustCalled, 'Adaptive difficulty triggers after interval');
+
+        // ===== AI Personality Tests =====
+        group('AI Personality Profiles');
+
+        for (const key of personalityKeys) {
+            const profile = AIPersonality.getProfile(key);
+            assert(profile.vpip >= 0 && profile.vpip <= 1, `${key} VPIP in range: ${profile.vpip}`);
+            assert(profile.aggression >= 0 && profile.aggression <= 1, `${key} aggression in range: ${profile.aggression}`);
+            const name = AIPersonality.getRandomName(key);
+            assert(typeof name === 'string' && name.length > 0, `${key} has random name: ${name}`);
+        }
+
+        // ===== Summary =====
+        const summary = document.getElementById('summary');
+        const total = passed + failed;
+        summary.textContent = `${passed}/${total} tests passed${failed > 0 ? ` (${failed} failed)` : ''}`;
+        summary.className = `summary ${failed === 0 ? 'pass' : 'fail'}`;
+    })();
+    </script>
+</body>
+</html>

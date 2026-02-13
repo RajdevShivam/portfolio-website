@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack Trainer Tests</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #1a1a2e; color: #e8e8e8; padding: 20px; }
+        h1 { margin-bottom: 8px; color: #ffd700; }
+        .summary { font-size: 18px; margin-bottom: 20px; padding: 12px; border-radius: 8px; }
+        .summary.pass { background: rgba(39, 174, 96, 0.2); border: 1px solid #27ae60; }
+        .summary.fail { background: rgba(192, 57, 43, 0.2); border: 1px solid #c0392b; }
+        .test-group { margin-bottom: 24px; }
+        .test-group h2 { font-size: 16px; color: #3498db; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 4px; }
+        .test { padding: 6px 12px; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .test.pass { color: #2ecc71; }
+        .test.fail { color: #e74c3c; font-weight: 700; }
+        .icon { font-size: 16px; }
+        .detail { color: #999; font-size: 12px; margin-left: 24px; }
+    </style>
+</head>
+<body>
+    <h1>Blackjack Trainer — Test Suite</h1>
+    <div class="summary" id="summary">Running tests...</div>
+    <div id="results"></div>
+
+    <!-- Stub DOM elements so UI helpers don't throw -->
+    <div id="bj-app" style="display:none">
+        <div id="bj-strat-feedback"></div>
+        <div id="bj-count-feedback"></div>
+        <div id="bj-game-feedback"></div>
+        <span id="bj-strat-accuracy"></span>
+        <span id="bj-strat-streak"></span>
+        <span id="bj-strat-best"></span>
+    </div>
+
+    <script src="../public/blackjack/blackjack.js"></script>
+    <script>
+    (function() {
+        let passed = 0, failed = 0;
+        const results = document.getElementById('results');
+        let currentGroupEl = null;
+
+        function group(name) {
+            currentGroupEl = document.createElement('div');
+            currentGroupEl.className = 'test-group';
+            currentGroupEl.innerHTML = `<h2>${name}</h2>`;
+            results.appendChild(currentGroupEl);
+        }
+
+        function assert(condition, name, detail = '') {
+            const el = document.createElement('div');
+            if (condition) {
+                passed++;
+                el.className = 'test pass';
+                el.innerHTML = `<span class="icon">✓</span> ${name}`;
+            } else {
+                failed++;
+                el.className = 'test fail';
+                el.innerHTML = `<span class="icon">✗</span> ${name}`;
+            }
+            currentGroupEl.appendChild(el);
+            if (detail && !condition) {
+                const d = document.createElement('div');
+                d.className = 'detail';
+                d.textContent = detail;
+                currentGroupEl.appendChild(d);
+            }
+        }
+
+        function card(rank, suit = 'spades') {
+            return { rank, suit, sym: CardEngine.SYMBOLS[suit], color: CardEngine.COLORS[suit] };
+        }
+
+        // ===== CardEngine Tests =====
+        group('CardEngine (Blackjack)');
+
+        const shoe = CardEngine.createShoe(6);
+        assert(shoe.cards.length === 312, '6-deck shoe has 312 cards', `Got ${shoe.cards.length}`);
+        assert(shoe.pos === 0, 'Shoe starts at position 0');
+        assert(shoe.cut === Math.floor(312 * 0.75), 'Cut card at 75%');
+        assert(!CardEngine.needsShuffle(shoe), 'Fresh shoe does not need shuffle');
+
+        const c1 = CardEngine.deal(shoe);
+        assert(c1 !== null, 'deal() returns a card');
+        assert(shoe.pos === 1, 'Shoe position advances after deal');
+
+        const drFull = CardEngine.decksRemaining(shoe);
+        assert(drFull > 5.9 && drFull < 6.0, `Decks remaining near 6 after 1 deal (got ${drFull.toFixed(3)})`);
+
+        // Advance past cut to trigger shuffle needed
+        const shoeCut = CardEngine.createShoe(1);
+        shoeCut.pos = shoeCut.cut;
+        assert(CardEngine.needsShuffle(shoeCut), 'needsShuffle returns true at cut');
+
+        assert(CardEngine.value(card('A')) === 11, 'Ace value = 11');
+        assert(CardEngine.value(card('K')) === 10, 'King value = 10');
+        assert(CardEngine.value(card('Q')) === 10, 'Queen value = 10');
+        assert(CardEngine.value(card('J')) === 10, 'Jack value = 10');
+        assert(CardEngine.value(card('10')) === 10, '10 value = 10');
+        assert(CardEngine.value(card('7')) === 7, '7 value = 7');
+        assert(CardEngine.value(card('2')) === 2, '2 value = 2');
+
+        // ===== BJ Hand Value Tests =====
+        group('BJ — Hand Values');
+
+        // Simple totals
+        assert(BJ.handValue([card('7'), card('8')]) === 15, '7+8 = 15');
+        assert(BJ.handValue([card('K'), card('Q')]) === 20, 'K+Q = 20');
+        assert(BJ.handValue([card('K'), card('A')]) === 21, 'K+A = 21 (soft)');
+        assert(BJ.handValue([card('A'), card('A')]) === 12, 'A+A = 12');
+        assert(BJ.handValue([card('K'), card('K'), card('A')]) === 21, 'K+K+A = 21');
+        assert(BJ.handValue([card('K'), card('7'), card('A')]) === 18, 'K+7+A = 18 (ace counts 1)');
+        assert(BJ.handValue([card('K'), card('K'), card('K')]) === 30, 'K+K+K = 30 (bust)');
+        assert(BJ.handValue([card('A'), card('A'), card('9')]) === 21, 'A+A+9 = 21');
+        assert(BJ.handValue([card('A'), card('A'), card('A'), card('8')]) === 21, 'A+A+A+8 = 21');
+
+        // ===== BJ Soft / Pair / Bust / Blackjack =====
+        group('BJ — Hand Classification');
+
+        // isSoft
+        assert(BJ.isSoft([card('A'), card('6')]) === true, 'A+6 is soft');
+        assert(BJ.isSoft([card('A'), card('K')]) === false, 'A+K is NOT soft (21, ace counted as 1 to avoid bust? no — 21 exact)');
+        assert(BJ.isSoft([card('K'), card('7')]) === false, 'K+7 is hard');
+        assert(BJ.isSoft([card('A'), card('5'), card('5')]) === false, 'A+5+5 = 21 hard (ace used as 1)');
+
+        // isPair
+        assert(BJ.isPair([card('8'), card('8')]) === true, '8+8 is a pair');
+        assert(BJ.isPair([card('A'), card('A')]) === true, 'A+A is a pair');
+        assert(BJ.isPair([card('K'), card('Q')]) === false, 'K+Q is NOT a pair');
+        assert(BJ.isPair([card('8'), card('8'), card('8')]) === false, 'Three 8s is NOT a pair (length > 2)');
+
+        // isBust
+        assert(BJ.isBust([card('K'), card('Q'), card('5')]) === true, 'K+Q+5 = 25 (bust)');
+        assert(BJ.isBust([card('K'), card('Q')]) === false, 'K+Q = 20 (not bust)');
+        assert(BJ.isBust([card('K'), card('K'), card('A')]) === false, 'K+K+A = 21 (not bust, ace=1)');
+
+        // isBlackjack
+        assert(BJ.isBlackjack([card('A'), card('K')]) === true, 'A+K is blackjack');
+        assert(BJ.isBlackjack([card('A'), card('10')]) === true, 'A+10 is blackjack');
+        assert(BJ.isBlackjack([card('K'), card('Q')]) === false, 'K+Q = 20, not blackjack');
+        assert(BJ.isBlackjack([card('7'), card('7'), card('7')]) === false, '7+7+7 = 21, not blackjack (3 cards)');
+
+        // ===== Basic Strategy Tests =====
+        group('Strategy — Hard Hands');
+
+        // Hard 8 vs dealer 5 → D (double)
+        const h8v5 = Strategy.getOptimal([card('5'), card('3')], card('5'));
+        assert(h8v5.type === 'hard', 'Hard 8 identified as hard hand');
+        assert(h8v5.action === 'D', `Hard 8 vs 5: expected D, got ${h8v5.action}`);
+
+        // Hard 17 vs dealer 10 → S (stand)
+        const h17v10 = Strategy.getOptimal([card('K'), card('7')], card('10'));
+        assert(h17v10.action === 'S', `Hard 17 vs 10: expected S, got ${h17v10.action}`);
+
+        // Hard 16 vs dealer A → Rh (surrender/hit)
+        const h16vA = Strategy.getOptimal([card('9'), card('7')], card('A'));
+        assert(h16vA.action === 'Rh', `Hard 16 vs A: expected Rh, got ${h16vA.action}`);
+
+        // Hard 11 vs dealer 10 → D
+        const h11v10 = Strategy.getOptimal([card('6'), card('5')], card('10'));
+        assert(h11v10.action === 'D', `Hard 11 vs 10: expected D, got ${h11v10.action}`);
+
+        // Hard 12 vs dealer 6 → S
+        const h12v6 = Strategy.getOptimal([card('7'), card('5')], card('6'));
+        assert(h12v6.action === 'S', `Hard 12 vs 6: expected S, got ${h12v6.action}`);
+
+        group('Strategy — Soft Hands');
+
+        // Soft 18 (A+7) vs dealer 6 → Ds (double or stand)
+        const s18v6 = Strategy.getOptimal([card('A'), card('7')], card('6'));
+        assert(s18v6.type === 'soft', 'A+7 identified as soft hand');
+        assert(s18v6.action === 'Ds', `Soft 18 vs 6: expected Ds, got ${s18v6.action}`);
+
+        // Soft 18 (A+7) vs dealer 9 → H
+        const s18v9 = Strategy.getOptimal([card('A'), card('7')], card('9'));
+        assert(s18v9.action === 'H', `Soft 18 vs 9: expected H, got ${s18v9.action}`);
+
+        // Soft 19 (A+8) vs any → S
+        const s19v5 = Strategy.getOptimal([card('A'), card('8')], card('5'));
+        assert(s19v5.action === 'S', `Soft 19 vs 5: expected S, got ${s19v5.action}`);
+
+        // Soft 13 (A+2) vs dealer 5 → D
+        const s13v5 = Strategy.getOptimal([card('A'), card('2')], card('5'));
+        assert(s13v5.action === 'D', `Soft 13 vs 5: expected D, got ${s13v5.action}`);
+
+        group('Strategy — Pairs');
+
+        // A+A vs any → P (always split aces)
+        const aavs7 = Strategy.getOptimal([card('A'), card('A')], card('7'));
+        assert(aavs7.type === 'pair', 'A+A identified as pair');
+        assert(aavs7.action === 'P', `A+A vs 7: expected P, got ${aavs7.action}`);
+
+        // 8+8 vs any → P (always split 8s)
+        const eevs10 = Strategy.getOptimal([card('8'), card('8')], card('10'));
+        assert(eevs10.action === 'P', `8+8 vs 10: expected P, got ${eevs10.action}`);
+
+        // 10+10 vs any → S (never split 10s)
+        const ttvs6 = Strategy.getOptimal([card('10'), card('10')], card('6'));
+        assert(ttvs6.action === 'S', `10+10 vs 6: expected S, got ${ttvs6.action}`);
+
+        // 5+5 vs dealer 6 → D (treat as hard 10, not pair split)
+        const fivefivev6 = Strategy.getOptimal([card('5'), card('5')], card('6'));
+        assert(fivefivev6.action === 'D', `5+5 vs 6: expected D (hard 10), got ${fivefivev6.action}`);
+
+        group('Strategy — matches()');
+
+        assert(Strategy.matches('H', 'H') === true, 'H matches H');
+        assert(Strategy.matches('S', 'S') === true, 'S matches S');
+        assert(Strategy.matches('D', 'D') === true, 'D matches D');
+        assert(Strategy.matches('H', 'S') === false, 'H does not match S');
+        assert(Strategy.matches('D', 'Ds') === true, 'D matches Ds (double or stand)');
+        assert(Strategy.matches('S', 'Ds') === true, 'S matches Ds (double or stand)');
+        assert(Strategy.matches('H', 'Rh') === true, 'H matches Rh (surrender or hit)');
+        assert(Strategy.matches('S', 'Rs') === true, 'S matches Rs (surrender or stand)');
+        assert(Strategy.matches('P', 'Ph') === true, 'P matches Ph (split or hit)');
+        assert(Strategy.matches('H', 'Ph') === true, 'H matches Ph (split or hit)');
+        assert(Strategy.matches('S', 'H') === false, 'S does not match H');
+
+        // ===== Card Counting Tests =====
+        group('Counting — Hi-Lo Values');
+
+        assert(Counting.hiLo(card('2')) === 1, '2 → +1');
+        assert(Counting.hiLo(card('3')) === 1, '3 → +1');
+        assert(Counting.hiLo(card('4')) === 1, '4 → +1');
+        assert(Counting.hiLo(card('5')) === 1, '5 → +1');
+        assert(Counting.hiLo(card('6')) === 1, '6 → +1');
+        assert(Counting.hiLo(card('7')) === 0, '7 → 0');
+        assert(Counting.hiLo(card('8')) === 0, '8 → 0');
+        assert(Counting.hiLo(card('9')) === 0, '9 → 0');
+        assert(Counting.hiLo(card('10')) === -1, '10 → -1');
+        assert(Counting.hiLo(card('J')) === -1, 'J → -1');
+        assert(Counting.hiLo(card('Q')) === -1, 'Q → -1');
+        assert(Counting.hiLo(card('K')) === -1, 'K → -1');
+        assert(Counting.hiLo(card('A')) === -1, 'A → -1');
+
+        group('Counting — Running & True Count');
+
+        const dealt1 = [card('2'), card('3'), card('K'), card('A'), card('5')];
+        // +1 +1 -1 -1 +1 = +1
+        assert(Counting.runningCount(dealt1) === 1, 'RC of [2,3,K,A,5] = +1', `Got ${Counting.runningCount(dealt1)}`);
+
+        const dealt2 = [card('K'), card('A'), card('Q'), card('J'), card('10')];
+        // -1 -1 -1 -1 -1 = -5
+        assert(Counting.runningCount(dealt2) === -5, 'RC of [K,A,Q,J,10] = -5', `Got ${Counting.runningCount(dealt2)}`);
+
+        const dealt3 = [card('2'), card('3'), card('4'), card('5'), card('6')];
+        // +1 +1 +1 +1 +1 = +5
+        assert(Counting.runningCount(dealt3) === 5, 'RC of [2,3,4,5,6] = +5', `Got ${Counting.runningCount(dealt3)}`);
+
+        // True count = RC / decks remaining
+        const tc1 = Counting.trueCount(6, 2);
+        assert(tc1 === 3, `TC(6, 2 decks) = 3.0, got ${tc1}`);
+
+        const tc2 = Counting.trueCount(-4, 2);
+        assert(tc2 === -2, `TC(-4, 2 decks) = -2.0, got ${tc2}`);
+
+        const tc3 = Counting.trueCount(0, 3);
+        assert(tc3 === 0, `TC(0, 3 decks) = 0, got ${tc3}`);
+
+        // Zero decks remaining doesn't divide by zero
+        const tc4 = Counting.trueCount(5, 0);
+        assert(tc4 === 5, `TC(5, 0 decks) = RC itself (no division), got ${tc4}`);
+
+        group('Counting — Bet Recommendations');
+
+        const bet1 = Counting.betRec(1);
+        assert(bet1.amt === 10, `TC=1 → min bet $10, got $${bet1.amt}`);
+
+        const bet2 = Counting.betRec(2);
+        assert(bet2.amt === 20, `TC=2 → $20, got $${bet2.amt}`);
+
+        const bet3 = Counting.betRec(3);
+        assert(bet3.amt === 40, `TC=3 → $40, got $${bet3.amt}`);
+
+        const bet4 = Counting.betRec(4);
+        assert(bet4.amt === 80, `TC=4 → $80, got $${bet4.amt}`);
+
+        const bet5 = Counting.betRec(5);
+        assert(bet5.amt === 120, `TC>=5 → $120, got $${bet5.amt}`);
+
+        // Custom min bet
+        const betCustom = Counting.betRec(3, 25);
+        assert(betCustom.amt === 100, `TC=3, min=$25 → $100, got $${betCustom.amt}`);
+
+        // ===== Stats (localStorage) Tests =====
+        group('Stats — localStorage');
+
+        Stats.reset();
+        const fresh = Stats.load();
+        assert(fresh.strategy.correct === 0, 'Fresh stats: strategy correct = 0');
+        assert(fresh.strategy.total === 0, 'Fresh stats: strategy total = 0');
+        assert(fresh.strategy.streak === 0, 'Fresh stats: strategy streak = 0');
+        assert(fresh.game.bankroll === 1000, 'Fresh stats: bankroll = 1000');
+
+        // Record correct answer
+        const s1 = Stats.record('strategy', true);
+        assert(s1.correct === 1, 'After 1 correct: correct = 1');
+        assert(s1.total === 1, 'After 1 correct: total = 1');
+        assert(s1.streak === 1, 'After 1 correct: streak = 1');
+
+        // Record incorrect answer
+        const s2 = Stats.record('strategy', false);
+        assert(s2.correct === 1, 'After incorrect: correct still 1');
+        assert(s2.total === 2, 'After incorrect: total = 2');
+        assert(s2.streak === 0, 'After incorrect: streak reset to 0');
+
+        // Best streak tracking
+        Stats.reset();
+        Stats.record('counting', true);
+        Stats.record('counting', true);
+        Stats.record('counting', true);
+        Stats.record('counting', false);
+        const s3 = Stats.record('counting', true);
+        assert(s3.bestStreak === 3, `Best streak tracked correctly (got ${s3.bestStreak})`);
+
+        Stats.reset();
+
+        // ===== Summary =====
+        const summary = document.getElementById('summary');
+        const total = passed + failed;
+        summary.textContent = `${passed}/${total} tests passed${failed > 0 ? ` (${failed} failed)` : ''}`;
+        summary.className = `summary ${failed === 0 ? 'pass' : 'fail'}`;
+    })();
+    </script>
+</body>
+</html>
